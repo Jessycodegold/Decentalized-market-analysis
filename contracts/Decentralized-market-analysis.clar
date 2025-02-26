@@ -22,3 +22,22 @@
 
 (define-read-only (get-market-data (asset (string-ascii 10)))
     (default-to ERR_ASSET_NOT_FOUND (map-get? market-trends { asset: asset })))
+
+    (define-public (set-alert (asset (string-ascii 10)) (threshold uint) (direction (string-ascii 4)))
+    (begin
+        (asserts! (or (is-eq direction "up") (is-eq direction "down")) ERR_INVALID_INPUT)
+        (asserts! (> threshold u0) ERR_INVALID_INPUT)
+        (map-set user-alerts { user: tx-sender, asset: asset } { threshold: threshold, direction: direction })
+        (ok "Alert set")))
+
+(define-public (remove-alert (asset (string-ascii 10)))
+    (begin
+        (asserts! (map-get? user-alerts { user: tx-sender, asset: asset }) ERR_ALERT_NOT_FOUND)
+        (map-delete user-alerts { user: tx-sender, asset: asset })
+        (ok "Alert removed")))
+
+(define-public (clear-market-data (asset (string-ascii 10)))
+    (begin
+        (asserts! (map-get? market-trends { asset: asset }) ERR_ASSET_NOT_FOUND)
+        (map-delete market-trends { asset: asset })
+        (ok "Market data removed")))
